@@ -17,6 +17,7 @@ function canny() {
     var ctx = canvas.getContext('2d')
     var imageData = $.extend({}, ctx.getImageData(0, 0, canvas.width, canvas.height))
     var tempImageData = new Array(imageData.data.length)
+    var gradientImageData=new Array(imageData.data.length)
     for (var i = 0; i < tempImageData; i++) {
         tempImageData[i] = imageData.data[i]
     }
@@ -137,8 +138,13 @@ function canny() {
             }
 
             var currentR = Math.hypot(Xredchannel.reduce((accum, item) => { return accum += item }, 0), Yredchannel.reduce((accum, item) => { return accum += item }, 0))
-            var currentG = Math.hypot(Xredchannel.reduce((accum, item) => { return accum += item }, 0), Yredchannel.reduce((accum, item) => { return accum += item }, 0))
-            var currentB = Math.hypot(Xredchannel.reduce((accum, item) => { return accum += item }, 0), Yredchannel.reduce((accum, item) => { return accum += item }, 0))
+            var currentG = Math.hypot(Xgreenchannel.reduce((accum, item) => { return accum += item }, 0), Ygreenchannel.reduce((accum, item) => { return accum += item }, 0))
+            var currentB = Math.hypot(Xbluechannel.reduce((accum, item) => { return accum += item }, 0), Ybluechannel.reduce((accum, item) => { return accum += item }, 0))
+            var currentGradient= Math.atan2(
+                0.299 * Yredchannel.reduce((accum, item) => { return accum += item }, 0)+ 0.587 * Ygreenchannel.reduce((accum, item) => { return accum += item }, 0) + 0.114 * Ybluechannel.reduce((accum, item) => { return accum += item }, 0),
+                0.299 * Xredchannel.reduce((accum, item) => { return accum += item }, 0)+ 0.587 * Xgreenchannel.reduce((accum, item) => { return accum += item }, 0) + 0.114 * Xbluechannel.reduce((accum, item) => { return accum += item }, 0)
+                ) * 180 / Math.PI
+            gradientImageData[index]=currentGradient
             if (currentR > maxGR) {
                 maxGR = currentR
             }
@@ -163,6 +169,55 @@ function canny() {
         }
     }
     //supress non max
+    var tempImageDataNonMaxHold=new Array(imageData.data.length)
+    for (var i = 0; i < canvas.width; i++) {
+        for (var j = 0; j < canvas.height; j++) {
+            var index = (i + j * canvas.width) * 4
+            //kernal
+            try{
+            var edge1=255
+            var edge2=255
+            
+            var indextl=((i-1)+ (j-1)*canvas.width)*4
+            var indextt=((i)+ (j-1)*canvas.width)*4
+            var indextr=((i+1)+ (j-1)*canvas.width)*4
+            var indexml=((i-1)+ (j)*canvas.width)*4
+            var indexmr=((i+1)+ (j)*canvas.width)*4
+            var indexbl=((i-1)+ (j+1)*canvas.width)*4
+            var indexbb=((i)+ (j+1)*canvas.width)*4
+            var indexbr=((i+1)+ (j+1)*canvas.width)*4
+            if(gradientImageData[index]>=0&&gradientImageData[index]<22.5||gradientImageData[index]>=157.5&&gradientImageData[index]<=180){
+                edge1=tempImageData[indexml]*0.299+tempImageData[indexml+1]*0.587+tempImageData[indexml+2]*0.114
+                edge2=tempImageData[indexmr]*0.299+tempImageData[indexmr+1]*0.587+tempImageData[indexmr+2]*0.114
+            }
+            if(gradientImageData[index]>=22.5&&gradientImageData[index]<67.5){
+                edge1=tempImageData[indexbl]*0.299+tempImageData[indexbl+1]*0.587+tempImageData[indexbl+2]*0.114
+                edge2=tempImageData[indextr]*0.299+tempImageData[indextr+1]*0.587+tempImageData[indextr+2]*0.114
+            }
+            if(gradientImageData[index]>=67.5&&gradientImageData[index]<112.5){
+                edge1=tempImageData[indextt]*0.299+tempImageData[indextt+1]*0.587+tempImageData[indextt+2]*0.114
+                edge2=tempImageData[indexbb]*0.299+tempImageData[indexbb+1]*0.587+tempImageData[indexbb+2]*0.114
+            }
+            if(gradientImageData[index]>=112.5&&gradientImageData[index]<157.5){
+                edge1=tempImageData[indexbr]*0.299+tempImageData[indexbr+1]*0.587+tempImageData[indexbr+2]*0.114
+                edge2=tempImageData[indextl]*0.299+tempImageData[indextl+1]*0.587+tempImageData[indextl+2]*0.114
+            }
+            if(tempImageData[index]>edge1&&tempImageData[index]>edge2){
+                newimageData.data[index]=tempImageData[index]*0.299+tempImageData[index+1]*0.587+tempImageData[index+2]*0.114
+                newimageData.data[index+1]=tempImageData[index]*0.299+tempImageData[index+1]*0.587+tempImageData[index+2]*0.114
+                newimageData.data[index+2]=tempImageData[index]*0.299+tempImageData[index+1]*0.587+tempImageData[index+2]*0.114
+                newimageData.data[index+3]=255
+            }else{
+                newimageData.data[index]=0
+                newimageData.data[index+1]=0
+                newimageData.data[index+2]=0
+                newimageData.data[index+3]=255
+            }
+            }catch(err){
+                console.log(err)
+            }
+        }
+    }
     alert("done")
     ctx.putImageData(new ImageData(new Uint8ClampedArray(newimageData.data), canvas.width, canvas.height), 0, 0)
 }

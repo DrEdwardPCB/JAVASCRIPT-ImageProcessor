@@ -19,6 +19,9 @@ $(document).ready(function () {
         if($("#function").val()=="sobel"){
             sobel()
         }
+        if($("#function").val()=="cannyedge"){
+            canny()
+        }
     })
 })
 function renderForm(){
@@ -30,6 +33,9 @@ function renderForm(){
     }
     if($("#function").val()=="sobel"){
         renderSobel()
+    }
+    if($("#function").val()=="cannyedge"){
+        renderCanny()
     }
 }
 
