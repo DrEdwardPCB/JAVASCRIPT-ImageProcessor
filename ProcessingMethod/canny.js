@@ -144,6 +144,9 @@ function canny() {
                 0.299 * Yredchannel.reduce((accum, item) => { return accum += item }, 0) + 0.587 * Ygreenchannel.reduce((accum, item) => { return accum += item }, 0) + 0.114 * Ybluechannel.reduce((accum, item) => { return accum += item }, 0),
                 0.299 * Xredchannel.reduce((accum, item) => { return accum += item }, 0) + 0.587 * Xgreenchannel.reduce((accum, item) => { return accum += item }, 0) + 0.114 * Xbluechannel.reduce((accum, item) => { return accum += item }, 0)
             ) * 180 / Math.PI
+            if(currentGradient<0){
+                currentGradient+=180
+            }
             gradientImageData[index] = currentGradient
             if (currentR > maxGR) {
                 maxGR = currentR
@@ -190,17 +193,20 @@ function canny() {
                     edge1 = tempImageData[indexml] * 0.299 + tempImageData[indexml + 1] * 0.587 + tempImageData[indexml + 2] * 0.114
                     edge2 = tempImageData[indexmr] * 0.299 + tempImageData[indexmr + 1] * 0.587 + tempImageData[indexmr + 2] * 0.114
                 }
-                if (gradientImageData[index] >= 22.5 && gradientImageData[index] < 67.5) {
+                else if (gradientImageData[index] >= 22.5 && gradientImageData[index] < 67.5) {
                     edge1 = tempImageData[indexbl] * 0.299 + tempImageData[indexbl + 1] * 0.587 + tempImageData[indexbl + 2] * 0.114
                     edge2 = tempImageData[indextr] * 0.299 + tempImageData[indextr + 1] * 0.587 + tempImageData[indextr + 2] * 0.114
                 }
-                if (gradientImageData[index] >= 67.5 && gradientImageData[index] < 112.5) {
+                else if (gradientImageData[index] >= 67.5 && gradientImageData[index] < 112.5) {
                     edge1 = tempImageData[indextt] * 0.299 + tempImageData[indextt + 1] * 0.587 + tempImageData[indextt + 2] * 0.114
                     edge2 = tempImageData[indexbb] * 0.299 + tempImageData[indexbb + 1] * 0.587 + tempImageData[indexbb + 2] * 0.114
                 }
-                if (gradientImageData[index] >= 112.5 && gradientImageData[index] < 157.5) {
+                else if (gradientImageData[index] >= 112.5 && gradientImageData[index] < 157.5) {
                     edge1 = tempImageData[indexbr] * 0.299 + tempImageData[indexbr + 1] * 0.587 + tempImageData[indexbr + 2] * 0.114
                     edge2 = tempImageData[indextl] * 0.299 + tempImageData[indextl + 1] * 0.587 + tempImageData[indextl + 2] * 0.114
+                }else{
+                    console.log("unexpected")
+                    console.log(gradientImageData[index])
                 }
                 if (tempImageData[index] > edge1 && tempImageData[index] > edge2) {
                     tempImageDataNonMaxHold[index] = tempImageData[index] * 0.299 + tempImageData[index + 1] * 0.587 + tempImageData[index + 2] * 0.114
@@ -330,6 +336,10 @@ function canny() {
                     newimageData.data[index + 1] = 255
                     newimageData.data[index + 2] = 255
                     newimageData.data[index + 3] = 255
+                    tempImageDataStrong[index] = 255
+                    tempImageDataStrong[index + 1] = 255
+                    tempImageDataStrong[index + 2] = 255
+                    tempImageDataStrong[index + 3] = 255
                 } else {
                     newimageData.data[index] = 0
                     newimageData.data[index + 1] = 0
